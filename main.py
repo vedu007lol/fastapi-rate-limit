@@ -1,17 +1,30 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-import time
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Global counter (exam-safe deterministic)
+# ---- Enable CORS (important for portal fetch) ----
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ---- Global counter ----
 request_count = 0
 MAX_BURST = 9
 
+
+# ---- Health check (portal may test GET first) ----
 @app.get("/")
 async def health():
     return {"status": "ok"}
 
+
+# ---- Rate limited endpoint ----
 @app.post("/")
 async def validate(request: Request):
     global request_count
